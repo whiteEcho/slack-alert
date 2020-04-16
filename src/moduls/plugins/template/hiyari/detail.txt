@@ -1,0 +1,10 @@
+#coding:utf-8
+${user_name}さん
+${id}の詳細はこちらです！
+
+ID: ${id}
+報告者: ${reporter}
+発生日: ${date_of_occurred}
+発覚日: ${date_of_discovered}
+概要: ${summary}
+詳細: ${detail}

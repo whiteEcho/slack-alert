@@ -1,3 +1,2 @@
 #coding:utf-8
-${user_name}さん！
 ヒヤリハットをゆるーく報告するためのBotだよ
