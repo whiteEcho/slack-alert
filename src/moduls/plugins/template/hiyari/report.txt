@@ -1,0 +1,8 @@
+#coding:utf-8
+ID: ${id}
+報告者: ${reporter}
+概要: ${summary}
+
+${user_name}さん
+上記の内容で登録したよ！
+報告ありがとうございます！
