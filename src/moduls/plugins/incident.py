@@ -4,25 +4,34 @@ import os
 import codecs
 import re
 import requests
+from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
+
 from slackbot.bot import listen_to
 from slackbot.bot import respond_to
 from slacker import Slacker
 from mako.lookup import TemplateLookup
-import slackbot_settings
-from .client.clinet import IClient as client
 
+import slackbot_settings
+from .error_handler import error_handler
+from .client.clinet import IClient as client
+from .id_util import get_id
 
 templates = TemplateLookup(directories=[os.path.join('plugins', 'template', 'incident')])
 
 
+@listen_to(r'(?:事故|インシデント)(?=.*(?:一覧))')
 @respond_to(r'(?:事故|インシデント)(?=.*(?:一覧))')
+@error_handler
 def list_func(message):
     template = templates.get_template('list.txt')
     elms = client.get_list_func()['response']
     message.reply(template.render(elms=elms))
 
 
+@listen_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))')
 @respond_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))')
+@error_handler
 def add_func(message):
     if 'files' in message.body:
         if __is_excel_file(message.body['files'][0]['mimetype']):
@@ -30,7 +39,8 @@ def add_func(message):
             file_name = message.body['files'][0]['name']
             template = templates.get_template('report.txt')
             file = __file_download(url)
-            i_id = client.add_report_func(file_name, file)['id']
+            response = client.add_report_func(file_name, file)
+            i_id = response['id']
             message.reply(
                 template.render(
                     user_name=message.user["profile"]["display_name"],
@@ -48,9 +58,11 @@ def add_func(message):
             initial_comment=template.render(user_name=message.user["profile"]["display_name"]))
 
 
+@listen_to(r'(?:事故|インシデント)(?=.*(?:\d+))')
 @respond_to(r'(?:事故|インシデント)(?=.*(?:\d+))')
+@error_handler
 def detail_func(message):
-    i_id = __get_id(message.body['text'])
+    i_id = get_id(message.body['text'])
 
     if 'files' in message.body:
         if __is_excel_file(message.body['files'][0]['mimetype']):
@@ -58,6 +70,7 @@ def detail_func(message):
             file_name = message.body['files'][0]['name']
             template = templates.get_template('edit.txt')
             file = __file_download(url)
+
             client.update_detail_func(i_id, file_name, file)
             message.reply(
                 template.render(
@@ -85,13 +98,6 @@ def __file_download(url):
     r = requests.get(url,
                      allow_redirects=True,
                      headers={
-                         'Authorization': 'Bearer {}'.format(slackbot_settings.API_TOKEN)
-                     },
+                         'Authorization': 'Bearer {}'.format(slackbot_settings.API_TOKEN)},
                      stream=True)
     return r.content
-
-
-def __get_id(request: str):
-    p = re.compile(r'(\d+)')
-    m = p.search(request)
-    return m.group(0)
