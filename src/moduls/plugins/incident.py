@@ -21,6 +21,15 @@ templates = TemplateLookup(directories=[os.path.join('plugins', 'template', 'inc
 @respond_to(r'(?:事故|インシデント)(?=.*(?:一覧))', flags=re.S)
 @error_handler
 def list_func(message):
+    """
+    登録済みの事故報告の一覧を返答する。
+
+    Parameters
+    ----------
+    message : Message
+       Slackから送られてきたMessageObject
+    """
+
     template = templates.get_template('list.txt')
     elms = client.get_list_func()['response']
     message.reply(template.render(elms=elms))
@@ -30,6 +39,17 @@ def list_func(message):
 @respond_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))', flags=re.S)
 @error_handler
 def add_func(message):
+    """
+    新規事故の報告を受け付ける。
+    ファイル添付がある場合は新規登録。
+    ファイル添付がない場合は報告用フォーマットを返答する。
+
+    Parameters
+    ----------
+    message : Message
+       Slackから送られてきたMessageObject
+    """
+
     if 'files' in message.body:
         if __is_excel_file(message.body['files'][0]['mimetype']):
             url = message.body['files'][0]['url_private_download']
@@ -59,6 +79,17 @@ def add_func(message):
 @respond_to(r'(?:事故|インシデント)(?=.*(?:\d+))', flags=re.S)
 @error_handler
 def detail_func(message):
+    """
+    登録済み事故報告の詳細を扱う。
+    ファイル添付がある場合は事故報告の修正。
+    ファイル添付がない場合は事故情報の詳細を表示する。
+
+    Parameters
+    ----------
+    message : Message
+       Slackから送られてきたMessageObject
+    """
+
     i_id = get_id(message.body['text'])
 
     if 'files' in message.body:
@@ -86,12 +117,40 @@ def detail_func(message):
 
 
 def __is_excel_file(mime_type):
+    """
+    パラメータのMimeTypeがエクセルのものか判定する。
+
+    Parameters
+    ----------
+    mime_type: str
+        添付されたファイルのMimeType
+
+    Returns
+    -------
+    is_excel_file: bool
+        True: エクセルファイル, False: エクセル以外
+    """
+
     return mime_type \
            in ['application/vnd.ms-excel',
                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
 
 
 def __file_download(url):
+    """
+    添付されたファイルをダウンロードする。
+
+    Parameters
+    ----------
+    url: str
+       Messageで連携されたプライベートダウンロードURL
+
+    Returns
+    -------
+    file: byte
+        ファイルデータ
+    """
+
     r = requests.get(url,
                      allow_redirects=True,
                      headers={

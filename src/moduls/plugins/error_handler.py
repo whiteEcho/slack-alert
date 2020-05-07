@@ -9,9 +9,10 @@ from requests.exceptions import RequestException
 templates = TemplateLookup(directories=[os.path.join('plugins', 'template')])
 template = templates.get_template('error.txt')
 
-formatter = '%(levelname)s : %(asctime)s : %(message)s (%(filename)s: line %(lineno)d)'
+formatter = '%(levelname)s : %(asctime)s : %(message)s'
+date_fmt = '%Y-%m-%d %H:%M:%S'
 logging.getLogger('Error handler')
-logging.basicConfig(format=formatter, datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(format=formatter, datefmt=date_fmt)
 
 
 class Error:
