@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import json
+
 import requests
 
 from . import config
@@ -69,7 +70,7 @@ class IClient:
 
     @staticmethod
     def update_detail_func(i_id, file_name, file):
-        requests.put(
+        r = requests.put(
             url=incident_by_id_url.format(i_id),
             data=file,
             headers={

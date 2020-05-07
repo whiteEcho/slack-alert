@@ -1,27 +1,24 @@
 # coding: utf-8
 
 import os
-import codecs
 import re
-import requests
-from requests.exceptions import HTTPError
-from requests.exceptions import RequestException
 
+import requests
+from slackbot import settings
+from mako.lookup import TemplateLookup
 from slackbot.bot import listen_to
 from slackbot.bot import respond_to
 from slacker import Slacker
-from mako.lookup import TemplateLookup
 
-import slackbot_settings
-from .error_handler import error_handler
 from .client.clinet import IClient as client
+from .error_handler import error_handler
 from .id_util import get_id
 
 templates = TemplateLookup(directories=[os.path.join('plugins', 'template', 'incident')])
 
 
-@listen_to(r'(?:事故|インシデント)(?=.*(?:一覧))')
-@respond_to(r'(?:事故|インシデント)(?=.*(?:一覧))')
+@listen_to(r'(?:事故|インシデント)(?=.*(?:一覧))', flags=re.S)
+@respond_to(r'(?:事故|インシデント)(?=.*(?:一覧))', flags=re.S)
 @error_handler
 def list_func(message):
     template = templates.get_template('list.txt')
@@ -29,8 +26,8 @@ def list_func(message):
     message.reply(template.render(elms=elms))
 
 
-@listen_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))')
-@respond_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))')
+@listen_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))', flags=re.S)
+@respond_to(r'(?:事故|インシデント)(?=.*(?:新規|登録))', flags=re.S)
 @error_handler
 def add_func(message):
     if 'files' in message.body:
@@ -49,7 +46,7 @@ def add_func(message):
             message.reply('エクセルじゃないよ')
 
     else:
-        slacker = Slacker(slackbot_settings.API_TOKEN)
+        slacker = Slacker(settings.API_TOKEN)
         template = templates.get_template('default_new.txt')
         file = open(os.path.join('plugins', 'template', 'incident', 'CSM_Guideline_app_C.xlsx'), 'rb')
         slacker.files.upload(
@@ -58,8 +55,8 @@ def add_func(message):
             initial_comment=template.render(user_name=message.user["profile"]["display_name"]))
 
 
-@listen_to(r'(?:事故|インシデント)(?=.*(?:\d+))')
-@respond_to(r'(?:事故|インシデント)(?=.*(?:\d+))')
+@listen_to(r'(?:事故|インシデント)(?=.*(?:\d+))', flags=re.S)
+@respond_to(r'(?:事故|インシデント)(?=.*(?:\d+))', flags=re.S)
 @error_handler
 def detail_func(message):
     i_id = get_id(message.body['text'])
@@ -77,7 +74,7 @@ def detail_func(message):
                     user_name=message.user["profile"]["display_name"],
                     id=i_id))
     else:
-        slacker = Slacker(slackbot_settings.API_TOKEN)
+        slacker = Slacker(settings.API_TOKEN)
         file_name, file = client.get_detail_func(i_id)
         template = templates.get_template('detail.txt')
         slacker.files.upload(
@@ -98,6 +95,6 @@ def __file_download(url):
     r = requests.get(url,
                      allow_redirects=True,
                      headers={
-                         'Authorization': 'Bearer {}'.format(slackbot_settings.API_TOKEN)},
+                         'Authorization': 'Bearer {}'.format(settings.API_TOKEN)},
                      stream=True)
     return r.content

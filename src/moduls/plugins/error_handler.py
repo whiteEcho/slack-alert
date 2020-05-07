@@ -3,13 +3,13 @@
 import logging
 import os
 
-from requests.exceptions import RequestException
 from mako.lookup import TemplateLookup
+from requests.exceptions import RequestException
 
 templates = TemplateLookup(directories=[os.path.join('plugins', 'template')])
 template = templates.get_template('error.txt')
 
-formatter = '%(levelname)s : %(asctime)s : %(message)s'
+formatter = '%(levelname)s : %(asctime)s : %(message)s (%(filename)s: line %(lineno)d)'
 logging.getLogger('Error handler')
 logging.basicConfig(format=formatter, datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -51,11 +51,11 @@ def error_handler(func):
         except RequestException as e:
             response = e.response
             error = Error(response=response)
-            logging.warning(error.fmt, e)
+            logging.warning(error.fmt, e, exc_info=True)
             message.reply(__message_render(error))
         except Exception as e:
             error = Error(code='999', message='Internal Server Error.')
-            logging.error(error.fmt, e)
+            logging.error(error.fmt, e, exc_info=True)
             message.reply(__message_render(error))
 
     return wrapper
