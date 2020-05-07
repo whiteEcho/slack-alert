@@ -1,0 +1,5 @@
+#coding:utf-8
+${user_name}さん
+
+報告ありがとう！
+ID: ${id}で登録したよ

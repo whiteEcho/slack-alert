@@ -1,14 +1,12 @@
 # coding: utf-8
 
 import os
-from mako.lookup import TemplateLookup
-
-
-# SlackのAPIを利用するためのトークン
-API_TOKEN = os.environ["BOT_TOKEN"]
 
 # このbot宛のメッセージで、どの応答にも当てはまらない場合の応答文字列
-DEFAULT_REPLY = TemplateLookup(directories='plugins\\template').get_template('help.txt')
+default_reply = None
+with open(os.path.join('plugins', 'template', 'help.txt'), encoding='utf-8') as f:
+    default_reply = f.read()
+DEFAULT_REPLY = default_reply
 
 # プラグインスクリプトを置いてあるサブディレクトリ名のリスト
 PLUGINS = ['plugins']

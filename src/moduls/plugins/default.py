@@ -1,11 +1,27 @@
 # coding: utf-8
 
-from mako.lookup import TemplateLookup
+import os
+
 from slackbot.bot import default_reply
 
-templates = TemplateLookup(directories=["plugins\\template"])
+from .error_handler import error_handler
 
 
 @default_reply()
+@error_handler
 def default_func(message):
-    message.reply(templates.get_template("help.txt").render())
+    """
+    デフォルトの返答をする。
+
+    Parameters
+    ----------
+    message : Message
+       Slackから送られてきたMessageObject
+
+    Returns
+    -------
+    None
+    """
+
+    with open(os.path.join('plugins', 'template', 'help.txt'), encoding='utf-8') as f:
+        message.reply(f.read())
